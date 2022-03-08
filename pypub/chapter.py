@@ -34,7 +34,7 @@ class ImageErrorException(Exception):
 
 
 def get_image_type(url):
-    for ending in ['jpg', 'jpeg', '.gif' '.png']:
+    for ending in ['jpg', 'jpeg', 'gif', 'png', 'svg']:
         if url.endswith(ending):
             return ending
     else:
@@ -104,13 +104,17 @@ def _replace_image(image_url, image_tag, ebook_folder,
         assert isinstance(image_tag, bs4.element.Tag)
     except AssertionError:
         raise TypeError("image_tag cannot be of type " + str(type(image_tag)))
+
+    if image_name is None:
+        image_name = image_url.split("/")[-1].split('.')[0]       # 从路径名称获取文件名
+
     if image_name is None:
         image_name = str(uuid.uuid4())
     try:
-        image_full_path = os.path.join(ebook_folder, 'images')
+        image_full_path = os.path.join(ebook_folder, 'images')  # 检查本地目录
         assert os.path.exists(image_full_path)
-        image_extension = save_image(image_url, image_full_path,
-                                     image_name)
+        image_extension = save_image(image_url, image_full_path, image_name)
+
         image_tag['src'] = 'images' + '/' + image_name + '.' + image_extension
     except ImageErrorException:
         image_tag.decompose()
