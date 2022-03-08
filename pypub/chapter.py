@@ -279,7 +279,7 @@ class ChapterFactory(object):
         """
         with codecs.open(file_name, 'r', encoding='utf-8') as f:
             content_string = f.read()
-        return self.create_chapter_from_string(content_string, url, title)
+        return self.create_chapter_from_string(content_string, file_name, title)
 
     def create_chapter_from_string(self, html_string, url=None, title=None):
         """
