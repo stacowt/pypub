@@ -15,6 +15,9 @@
     {% for chapter in chapters %}
     <item href="{{ chapter.link }}" id="{{ chapter.id }}" media-type="application/xhtml+xml"/>
     {% endfor %}
+    {% for img in images %}
+    <item href="{{ img.link }}" id="{{ img.id }}" media-type="image/jpeg"/>
+    {% endfor %}
   </manifest>
   <spine toc="ncx">
     <itemref idref="toc"/>

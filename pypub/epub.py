@@ -10,6 +10,8 @@ import jinja2
 import requests
 import requests.packages.urllib3
 
+import numpy as np
+
 try:
     imp.find_module('lxml')
     lxml_module_exists = True
@@ -72,11 +74,25 @@ class _EpubFile(object):
                     list_length = len(value)
                 else:
                     assert len(value) == list_length
+
+        # 判断参数中是否有图片
+        images = []
+        if 'img_id' in parameter_lists.keys() and 'img_list' in parameter_lists.keys():
+            img_id = parameter_lists.pop('img_id')
+            img_list = parameter_lists.pop('img_list')
+            assert(len(img_id) == len(img_list))
+
+            template_image = collections.namedtuple('template_image', ['id', 'link'])
+
+            for index in range(len(img_id)):
+                images.append(template_image(*(img_id[index], img_list[index])))
+
         check_list_lengths(parameter_lists)
         template_chapter = collections.namedtuple('template_chapter',
                                                   list(parameter_lists.keys()))
         chapters = [template_chapter(*items) for items in zip(*list(parameter_lists.values()))]
-        self._render_template(chapters=chapters, **self.non_chapter_parameters)
+
+        self._render_template(chapters=chapters, images=images, **self.non_chapter_parameters)
 
     def get_content(self):
         return self.content
@@ -149,7 +165,17 @@ class ContentOpf(_EpubFile):
     def add_chapters(self, chapter_list):
         id_list = list(range(len(chapter_list)))
         link_list = [str(n) + '.xhtml' for n in id_list]
-        super(ContentOpf, self).add_chapters(**{'id': id_list, 'link': link_list})
+
+        # 添加图片的id和link
+        img_list = []
+        for chapter in chapter_list:
+            for img in chapter.img:
+                img_list.append(img)
+
+        img_id_list = list(range(len(img_list)))
+        img_id_list = ( np.array(img_id_list) + len(chapter_list) ).tolist()
+
+        super(ContentOpf, self).add_chapters(**{'id': id_list, 'link': link_list, 'img_id': img_id_list, 'img_list': img_list})
 
     def get_content_as_element(self):
         if lxml_module_exists:

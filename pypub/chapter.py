@@ -116,6 +116,7 @@ def _replace_image(image_url, image_tag, ebook_folder,
         image_extension = save_image(image_url, image_full_path, image_name)
 
         image_tag['src'] = 'images' + '/' + image_name + '.' + image_extension
+        return image_tag['src']
     except ImageErrorException:
         image_tag.decompose()
     except AssertionError:
@@ -151,6 +152,7 @@ class Chapter(object):
         self.content = content
         self._content_tree = BeautifulSoup(self.content, 'html.parser')
         self.url = url
+        self.img = []   # 添加图片，方便后面添加在manifest中
         try:
             self.html_title = cgi.escape(self.title, quote=True)
         except NameError:
@@ -204,7 +206,8 @@ class Chapter(object):
     def _replace_images_in_chapter(self, ebook_folder):
         image_url_list = self._get_image_urls()
         for image_tag, image_url in image_url_list:
-            _replace_image(image_url, image_tag, ebook_folder)
+            img_src = _replace_image(image_url, image_tag, ebook_folder)
+            self.img.append(img_src)
         unformatted_html_unicode_string = str(self._content_tree.prettify(encoding='utf-8',
                                                                               formatter=EntitySubstitution.substitute_html),
                                                   encoding='utf-8')
